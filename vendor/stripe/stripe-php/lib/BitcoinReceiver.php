@@ -2,18 +2,11 @@
 
 namespace Stripe;
 
-/**
- * Class BitcoinReceiver
-
- * @deprecated Please use sources instead.
- */
-class BitcoinReceiver extends ExternalAccount
+class BitcoinReceiver extends ApiResource
 {
     /**
      * @return string The class URL for this resource. It needs to be special
      *    cased because it doesn't fit into the standard resource pattern.
-     *
-     * @deprecated Please use sources instead.
      */
     public static function classUrl()
     {
@@ -23,31 +16,36 @@ class BitcoinReceiver extends ExternalAccount
     /**
      * @return string The instance URL for this resource. It needs to be special
      *    cased because it doesn't fit into the standard resource pattern.
-     *
-     * @deprecated Please use sources instead.
      */
     public function instanceUrl()
     {
-        $result = parent::instanceUrl();
-        if ($result) {
-            return $result;
-        } else {
-            $id = $this['id'];
-            $id = Util\Util::utf8($id);
-            $extn = urlencode($id);
+        $id = $this['id'];
+        if (!$id) {
+            $class = get_class($this);
+            $msg = "Could not determine which URL to request: $class instance "
+             . "has invalid ID: $id";
+            throw new Error\InvalidRequest($msg, null);
+        }
+
+        $id = Util\Util::utf8($id);
+        $extn = urlencode($id);
+
+        if (!$this['customer']) {
             $base = BitcoinReceiver::classUrl();
             return "$base/$extn";
+        } else {
+            $base = Customer::classUrl();
+            $parent = Util\Util::utf8($this['customer']);
+            $parentExtn = urlencode($parent);
+            return "$base/$parentExtn/sources/$extn";
         }
     }
 
     /**
-     * @param array|string $id The ID of the bitcoin receiver to retrieve, or
-     *     an options array containing an `id` key.
+     * @param string $id The ID of the Bitcoin Receiver to retrieve.
      * @param array|string|null $opts
      *
      * @return BitcoinReceiver
-     *
-     * @deprecated Please use sources instead.
      */
     public static function retrieve($id, $opts = null)
     {
@@ -58,9 +56,7 @@ class BitcoinReceiver extends ExternalAccount
      * @param array|null $params
      * @param array|string|null $opts
      *
-     * @return Collection of BitcoinReceivers
-     *
-     * @deprecated Please use sources instead.
+     * @return BitcoinReceiver[].
      */
     public static function all($params = null, $opts = null)
     {
@@ -72,8 +68,6 @@ class BitcoinReceiver extends ExternalAccount
      * @param array|string|null $opts
      *
      * @return BitcoinReceiver The created Bitcoin Receiver item.
-     *
-     * @deprecated Please use sources instead.
      */
     public static function create($params = null, $opts = null)
     {
@@ -82,17 +76,22 @@ class BitcoinReceiver extends ExternalAccount
 
     /**
      * @param array|null $params
-     * @param array|string|null $options
+     * @param array|string|null $opts
      *
-     * @return BitcoinReceiver The refunded Bitcoin Receiver item.
-     *
-     * @deprecated Please use sources instead.
+     * @return BitcoinReceiver The deleted Bitcoin Receiver item.
      */
-    public function refund($params = null, $options = null)
+    public function delete($params = null, $opts = null)
     {
-        $url = $this->instanceUrl() . '/refund';
-        list($response, $opts) = $this->_request('post', $url, $params, $options);
-        $this->refreshFrom($response, $opts);
-        return $this;
+        return $this->_delete($params, $opts);
+    }
+
+    /**
+     * @param array|string|null $opts
+     *
+     * @return BitcoinReceiver The saved Bitcoin Receiver item.
+     */
+    public function save($opts = null)
+    {
+        return $this->_save($opts);
     }
 }

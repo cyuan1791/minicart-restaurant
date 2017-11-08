@@ -6,18 +6,12 @@ class InvalidRequest extends Base
 {
     public function __construct(
         $message,
-        $stripeParam,
+        $param,
         $httpStatus = null,
         $httpBody = null,
-        $jsonBody = null,
-        $httpHeaders = null
+        $jsonBody = null
     ) {
-        parent::__construct($message, $httpStatus, $httpBody, $jsonBody, $httpHeaders);
-        $this->stripeParam = $stripeParam;
-    }
-
-    public function getStripeParam()
-    {
-        return $this->stripeParam;
+        parent::__construct($message, $httpStatus, $httpBody, $jsonBody);
+        $this->param = $param;
     }
 }

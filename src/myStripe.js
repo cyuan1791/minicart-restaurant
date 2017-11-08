@@ -20,7 +20,7 @@ myStripe.prototype.reportMessage = function reportMessage(msg) {
 };
 
 
-myStripe.prototype.submit = function submit () {
+myStripe.prototype.submit = function submit (evt) {
 		// Flag variable:
 		var error = false;
 
@@ -61,24 +61,11 @@ myStripe.prototype.submit = function submit () {
 				mymsg = config.strings.pleaseEnter + config.strings.phone;
 				this.reportMessage(mymsg)
 			}
-
+	         if (error) {
+			evt.preventDefault();
+			console.log('error');
+		 } 
 		// Validate other form elements, if needed!
-
-		// Check for errors:
-		if (!error) {
-
-		$('#submitBtn').attr("disabled", "disabled");
-            // remove form button
-	        $('#payment-processing').text('');
-			// Get the Stripe token:
-			Stripe.card.createToken({
-				number: ccNum,
-				cvc: cvcNum,
-				exp_month: expMonth,
-				exp_year: expYear
-			}, this.stripeResponseHandler);
-
-		}
 
 },
 
@@ -89,50 +76,8 @@ myStripe.prototype.stripeResponseHandler =  function stripeResponseHandler(statu
 	if (response.error) {
 
 		this.reportMessage(response.error.message);
-
+		
 	} else { // No errors, submit the form:
-
-
-	  var frm = $("#payment-form");
-
-	  // Token contains id, last4, and card type:
-	  var token = response['id'];
-
-	  // Insert the token into the form so it gets submitted to the server
-	  frm.append("<input type='hidden' name='stripeToken' value='" + token + "' />");
-
-	  // ajax Submit the form:
-      // 
-      frm.submit(function (ev) {
-        $.ajax({
-            type: frm.attr('method'),
-            url: frm.attr('action'),
-            data: frm.serialize(),
-            success: function (data) {
-                // close the popup
-                //$("#minicart-close").click();
-                // extract content between tag <myresult></myresult>
-                // from ajax response and put into current page's
-                // <div id="result> </div>
-                //var text = data.match(/<myresult[^>]*>([^<]+)<\/myresult>/)[1];
-                var startTag = data.indexOf('<myresult>');
-                var endTag = data.indexOf('</myresult>');
-                var text = data.substring(startTag + 10, endTag);
-                //$("#result").html(text);
-                //$(stripe.minicart.config.result).html(text);
-		$('#payment-message').html(text + '<br /><span id="paymentDone" class="btn btn-info" style="text-align:center;">' + config.strings.doneMsg + '</span>').addClass('alert alert-danger');
-		$('#paymentDone').click( function() {
-                   stripe.minicart.reset();
-		});
-		//$('#payment-message').html(text).addClass('alert alert-danger');
-                //stripe.minicart.reset();
-            }
-        });
-
-        ev.preventDefault();
-      });
-   
-      frm.submit();
    }
 
 } // End of stripeResponseHandler() function.

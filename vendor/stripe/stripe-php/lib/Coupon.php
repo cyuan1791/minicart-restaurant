@@ -2,16 +2,10 @@
 
 namespace Stripe;
 
-/**
- * Class Coupon
- *
- * @package Stripe
- */
 class Coupon extends ApiResource
 {
     /**
-     * @param array|string $id The ID of the coupon to retrieve, or an options
-     *     array containing an `id` key.
+     * @param string $id The ID of the coupon to retrieve.
      * @param array|string|null $opts
      *
      * @return Coupon
@@ -30,18 +24,6 @@ class Coupon extends ApiResource
     public static function create($params = null, $opts = null)
     {
         return self::_create($params, $opts);
-    }
-
-    /**
-     * @param string $id The ID of the coupon to update.
-     * @param array|null $params
-     * @param array|string|null $options
-     *
-     * @return Coupon The updated coupon.
-     */
-    public static function update($id, $params = null, $options = null)
-    {
-        return self::_update($id, $params, $options);
     }
 
     /**
@@ -69,7 +51,7 @@ class Coupon extends ApiResource
      * @param array|null $params
      * @param array|string|null $opts
      *
-     * @return Collection of Coupons
+     * @return Coupon[]
      */
     public static function all($params = null, $opts = null)
     {

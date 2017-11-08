@@ -2,16 +2,8 @@
 
 namespace Stripe;
 
-use Countable;
-
-/**
- * Class AttachedObject
- *
- * e.g. metadata on Stripe objects.
- *
- * @package Stripe
- */
-class AttachedObject extends StripeObject implements Countable
+// e.g. metadata on Stripe objects.
+class AttachedObject extends Object
 {
     /**
      * Updates this object.
@@ -29,15 +21,5 @@ class AttachedObject extends StripeObject implements Countable
         foreach ($properties as $k => $v) {
             $this->$k = $v;
         }
-    }
-
-    /**
-     * Counts the number of elements in the AttachedObject instance.
-     *
-     * @return int the number of elements
-     */
-    public function count()
-    {
-        return count($this->_values);
     }
 }

@@ -2,70 +2,29 @@
 
 namespace Stripe;
 
-/**
- * Class Refund
- *
- * @property string $id
- * @property string $object
- * @property int $amount
- * @property mixed $balance_transaction
- * @property string $charge
- * @property int $created
- * @property string $currency
- * @property mixed $metadata
- * @property mixed $reason
- * @property mixed $receipt_number
- * @property string $status
- *
- * @package Stripe
- */
 class Refund extends ApiResource
 {
-
     /**
-     * @param array|string $id The ID of the refund to retrieve, or an options
-     *     array containing an `id` key.
-     * @param array|string|null $options
-     *
-     * @return Refund
+     * @return string The API URL for this Stripe refund.
      */
-    public static function retrieve($id, $options = null)
+    public function instanceUrl()
     {
-        return self::_retrieve($id, $options);
-    }
+        $id = $this['id'];
+        $charge = $this['charge'];
+        if (!$id) {
+            throw new Error\InvalidRequest(
+                "Could not determine which URL to request: " .
+                "class instance has invalid ID: $id",
+                null
+            );
+        }
+        $id = Util\Util::utf8($id);
+        $charge = Util\Util::utf8($charge);
 
-    /**
-     * @param string $id The ID of the refund to update.
-     * @param array|null $params
-     * @param array|string|null $options
-     *
-     * @return Refund The updated refund.
-     */
-    public static function update($id, $params = null, $options = null)
-    {
-        return self::_update($id, $params, $options);
-    }
-
-    /**
-     * @param array|null $params
-     * @param array|string|null $options
-     *
-     * @return Collection of Refunds
-     */
-    public static function all($params = null, $options = null)
-    {
-        return self::_all($params, $options);
-    }
-
-    /**
-     * @param array|null $params
-     * @param array|string|null $options
-     *
-     * @return Refund The created refund.
-     */
-    public static function create($params = null, $options = null)
-    {
-        return self::_create($params, $options);
+        $base = Charge::classUrl();
+        $chargeExtn = urlencode($charge);
+        $extn = urlencode($id);
+        return "$base/$chargeExtn/refunds/$extn";
     }
 
     /**

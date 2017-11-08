@@ -25,22 +25,17 @@ class TestCase extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         ApiRequestor::setHttpClient(HttpClient\CurlClient::instance());
-
-        // Peg the API version so that it can be varied independently of the
-        // one set on the test account.
-        Stripe::setApiVersion('2017-04-06');
-
         $this->mock = null;
         $this->call = 0;
     }
 
-    protected function mockRequest($method, $path, $params = array(), $return = array('id' => 'myId'), $rcode = 200, $base = 'https://api.stripe.com')
+    protected function mockRequest($method, $path, $params = array(), $return = array('id' => 'myId'))
     {
         $mock = $this->setUpMockRequest();
         $mock->expects($this->at($this->call++))
              ->method('request')
-             ->with(strtolower($method), $base . $path, $this->anything(), $params, false)
-             ->willReturn(array(json_encode($return), $rcode, array()));
+             ->with(strtolower($method), 'https://api.stripe.com' . $path, $this->anything(), $params, false)
+             ->willReturn(array(json_encode($return), 200));
     }
 
     private function setUpMockRequest()
@@ -65,15 +60,19 @@ class TestCase extends \PHPUnit_Framework_TestCase
                 'amount' => 2000,
                 'currency' => 'usd',
                 'description' => 'Charge for test@example.com',
-                'card' => 'tok_visa',
+                'card' => array(
+                    'number' => '4242424242424242',
+                    'exp_month' => 5,
+                    'exp_year' => date('Y') + 3,
+                ),
             )
         );
     }
 
     /**
-     * Create a valid test transfer.
+     * Create a valid test charge.
      */
-    protected static function createTestTransfer(array $attributes = array(), $opts = null)
+    protected static function createTestTransfer(array $attributes = array())
     {
         self::authorizeFromEnv();
 
@@ -85,8 +84,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
                 'currency' => 'usd',
                 'description' => 'Transfer to test@example.com',
                 'recipient' => $recipient->id
-            ),
-            $opts
+            )
         );
     }
 
@@ -99,7 +97,11 @@ class TestCase extends \PHPUnit_Framework_TestCase
 
         return Customer::create(
             $attributes + array(
-                'card' => 'tok_visa',
+                'card' => array(
+                    'number' => '4242424242424242',
+                    'exp_month' => 5,
+                    'exp_year' => date('Y') + 3,
+                ),
             )
         );
     }
@@ -117,69 +119,27 @@ class TestCase extends \PHPUnit_Framework_TestCase
                 'type' => 'individual',
                 'tax_id' => '000000000',
                 'bank_account' => array(
-                    'country' => 'US',
+                    'country'    => 'US',
                     'routing_number' => '110000000',
-                    'account_number' => '000123456789'
+                    'account_number'  => '000123456789'
                 ),
             )
         );
     }
 
     /**
-     * Create a test account
+     * Generate a random 8-character string. Useful for ensuring
+     * multiple test suite runs don't conflict
      */
-    protected static function createTestAccount(array $attributes = array())
+    protected static function randomString()
     {
-        self::authorizeFromEnv();
+        $chars = 'abcdefghijklmnopqrstuvwxyz';
+        $str = '';
+        for ($i = 0; $i < 10; $i++) {
+            $str .= $chars[rand(0, strlen($chars)-1)];
+        }
 
-        return Account::create(
-            $attributes + array(
-                'managed' => false,
-                'country' => 'US',
-                'email' => self::generateRandomEmail(),
-            )
-        );
-    }
-
-    /**
-     * Create a test account
-     */
-    protected static function createTestManagedAccount(array $attributes = array())
-    {
-        self::authorizeFromEnv();
-
-        return Account::create(
-            $attributes + array(
-                'managed' => true,
-                'country' => 'US',
-                'external_account' => array(
-                    'object' => 'bank_account',
-                    'country' => 'US',
-                    'currency' => 'usd',
-                    'routing_number' => '110000000',
-                    'account_number' => '000123456789'
-                ),
-                'legal_entity' => array(
-                    'type'               => 'individual',
-                    'personal_id_number' => '000000000',
-                    'type'               => 'individual',
-                    'dob'                => array('year' => '1980', 'month' => '01', 'day' => '01'),
-                    'first_name'         => 'John',
-                    'last_name'          => 'Doe',
-                    'address'            => array(
-                        'line1'          => '1234 Main Street',
-                        'postal_code'    => '94110',
-                        'city'           => 'San Francisco'
-                    ),
-                    'personal_address'   => array(
-                        'line1'          => '1234 Main Street',
-                        'postal_code'    => '94110',
-                        'city'           => 'San Francisco'
-                    )
-                ),
-                'tos_acceptance' => array('date' => time(), 'ip' => '127.0.0.1')
-            )
-        );
+        return $str;
     }
 
     /**
@@ -227,7 +187,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Generate a semi-random string
+     * Genereate a semi-random string
      */
     protected static function generateRandomString($length = 24)
     {
@@ -238,14 +198,6 @@ class TestCase extends \PHPUnit_Framework_TestCase
             $randomString .= $characters[rand(0, $charactersLength - 1)];
         }
         return $randomString;
-    }
-
-    /**
-     * Generate a semi-random email.
-     */
-    protected static function generateRandomEmail()
-    {
-        return 'dev-platform-bots+php-'.self::generateRandomString(12).'@stripe.com';
     }
 
     protected static function createTestBitcoinReceiver($email)

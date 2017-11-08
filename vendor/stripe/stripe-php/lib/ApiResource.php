@@ -2,12 +2,7 @@
 
 namespace Stripe;
 
-/**
- * Class ApiResource
- *
- * @package Stripe
- */
-abstract class ApiResource extends StripeObject
+abstract class ApiResource extends Object
 {
     private static $HEADERS_TO_PERSIST = array('Stripe-Account' => true, 'Stripe-Version' => true);
 
@@ -30,8 +25,7 @@ abstract class ApiResource extends StripeObject
             $this->_retrieveOptions,
             $this->_opts->headers
         );
-        $this->setLastResponse($response);
-        $this->refreshFrom($response->json, $this->_opts);
+        $this->refreshFrom($response, $this->_opts);
         return $this;
     }
 
@@ -69,10 +63,11 @@ abstract class ApiResource extends StripeObject
     }
 
     /**
-     * @return string The instance endpoint URL for the given class.
+     * @return string The full API URL for this API resource.
      */
-    public static function resourceUrl($id)
+    public function instanceUrl()
     {
+        $id = $this['id'];
         if ($id === null) {
             $class = get_called_class();
             $message = "Could not determine which URL to request: "
@@ -85,21 +80,14 @@ abstract class ApiResource extends StripeObject
         return "$base/$extn";
     }
 
-    /**
-     * @return string The full API URL for this API resource.
-     */
-    public function instanceUrl()
-    {
-        return static::resourceUrl($this['id']);
-    }
-
-    protected static function _validateParams($params = null)
+    private static function _validateParams($params = null)
     {
         if ($params && !is_array($params)) {
             $message = "You must pass an array as the first argument to Stripe API "
                . "method calls.  (HINT: an example call to create a charge "
                . "would be: \"Stripe\\Charge::create(array('amount' => 100, "
-               . "'currency' => 'usd', 'source' => 'tok_1234'))\")";
+               . "'currency' => 'usd', 'card' => array('number' => "
+               . "4242424242424242, 'exp_month' => 5, 'exp_year' => 2015)))\")";
             throw new Error\Api($message);
         }
     }
@@ -107,9 +95,7 @@ abstract class ApiResource extends StripeObject
     protected function _request($method, $url, $params = array(), $options = null)
     {
         $opts = $this->_opts->merge($options);
-        list($resp, $options) = static::_staticRequest($method, $url, $params, $opts);
-        $this->setLastResponse($resp);
-        return array($resp->json, $options);
+        return static::_staticRequest($method, $url, $params, $opts);
     }
 
     protected static function _staticRequest($method, $url, $params, $options)
@@ -139,44 +125,17 @@ abstract class ApiResource extends StripeObject
         $url = static::classUrl();
 
         list($response, $opts) = static::_staticRequest('get', $url, $params, $options);
-        $obj = Util\Util::convertToStripeObject($response->json, $opts);
-        if (!is_a($obj, 'Stripe\\Collection')) {
-            $class = get_class($obj);
-            $message = "Expected type \"Stripe\\Collection\", got \"$class\" instead";
-            throw new Error\Api($message);
-        }
-        $obj->setLastResponse($response);
-        $obj->setRequestParams($params);
-        return $obj;
+        return Util\Util::convertToStripeObject($response, $opts);
     }
 
     protected static function _create($params = null, $options = null)
     {
         self::_validateParams($params);
+        $base = static::baseUrl();
         $url = static::classUrl();
 
         list($response, $opts) = static::_staticRequest('post', $url, $params, $options);
-        $obj = Util\Util::convertToStripeObject($response->json, $opts);
-        $obj->setLastResponse($response);
-        return $obj;
-    }
-
-    /**
-     * @param string $id The ID of the API resource to update.
-     * @param array|null $params
-     * @param array|string|null $opts
-     *
-     * @return ApiResource the updated API resource
-     */
-    protected static function _update($id, $params = null, $options = null)
-    {
-        self::_validateParams($params);
-        $url = static::resourceUrl($id);
-
-        list($response, $opts) = static::_staticRequest('post', $url, $params, $options);
-        $obj = Util\Util::convertToStripeObject($response->json, $opts);
-        $obj->setLastResponse($response);
-        return $obj;
+        return Util\Util::convertToStripeObject($response, $opts);
     }
 
     protected function _save($options = null)

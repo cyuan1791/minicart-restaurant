@@ -2,33 +2,10 @@
 
 namespace Stripe;
 
-/**
- * Class Customer
- *
- * @property string $id
- * @property string $object
- * @property int $account_balance
- * @property string $business_vat_id
- * @property string $created
- * @property string $currency
- * @property string $default_source
- * @property bool $delinquent
- * @property string $description
- * @property mixed $discount
- * @property string $email
- * @property bool $livemode
- * @property array $metadata
- * @property mixed $shipping
- * @property Collection $sources
- * @property Collection $subscriptions
- *
- * @package Stripe
- */
 class Customer extends ApiResource
 {
     /**
-     * @param array|string $id The ID of the customer to retrieve, or an
-     *     options array containing an `id` key.
+     * @param string $id The ID of the customer to retrieve.
      * @param array|string|null $opts
      *
      * @return Customer
@@ -42,7 +19,7 @@ class Customer extends ApiResource
      * @param array|null $params
      * @param array|string|null $opts
      *
-     * @return Collection of Customers
+     * @return array An array of Customers.
      */
     public static function all($params = null, $opts = null)
     {
@@ -58,18 +35,6 @@ class Customer extends ApiResource
     public static function create($params = null, $opts = null)
     {
         return self::_create($params, $opts);
-    }
-
-    /**
-     * @param string $id The ID of the customer to update.
-     * @param array|null $params
-     * @param array|string|null $options
-     *
-     * @return Customer The updated customer.
-     */
-    public static function update($id, $params = null, $options = null)
-    {
-        return self::_update($id, $params, $options);
     }
 
     /**
@@ -180,6 +145,8 @@ class Customer extends ApiResource
     }
 
     /**
+     * @param array|null $params
+     *
      * @return Customer The updated customer.
      */
     public function deleteDiscount()
