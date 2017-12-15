@@ -71,7 +71,7 @@ var totalFormat = { format: true, showCode: true };
         <% } %>
     </li>
 
-        <li><h4 style="text-align: center;">Special Instructions</h4> <textarea name="extraInstructions" rows="4" cols="40" ></textarea></li>
+        <li><h4 style="text-align: center;">Special Instructions</h4> <textarea name="extraInstructions" rows="4" cols="35" ></textarea></li>
     </ul>
 
       </div>
@@ -90,7 +90,7 @@ var totalFormat = { format: true, showCode: true };
       <div class="panel-body">
 <table class="table table-condensed">
          <tr> <td><label class="minitext"><%= config.strings.phone %></label> </td><td><input type="text" id="phone" name="Phone" size=15 value="" onfocusin="stripe.minicart.myStripe.myfocus(event);" /></td></tr>
-         <tr> <td><label class="minitext"><%= config.strings.name %></label></td><td><input type="text" id="name" name="name" size=25 value="" onfocusin="stripe.minicart.myStripe.myfocus(event);"  /></td></tr>
+         <tr> <td><label class="minitext"><%= config.strings.name %></label></td><td><input type="text" id="name" name="name" size=22 value="" onfocusin="stripe.minicart.myStripe.myfocus(event);"  /></td></tr>
 	<% if (config.userAddressRequired) { %>
          <tr> <td><label class="minitext"><%= config.strings.address %></label></td><td><input type="text" id="address_line1" name="address_line1" onfocusin="stripe.minicart.myStripe.myfocus(event);" size=25 value="" /></td></tr>
          <tr> <td><label class="minitext"><%= config.strings.city %> </label></td><td><input type="text" id="address_city" name="address_city" onfocusin="stripe.minicart.myStripe.myfocus(event);" size=18 value="" />
@@ -106,12 +106,12 @@ var totalFormat = { format: true, showCode: true };
             <table class="table table-condensed">
             <tr><td>
             <h5  class="text-warning">
-                <%= config.strings.subtotal %> <%= cart.total(totalFormat) %>
+                <%= config.strings.subtotal %> <%= cart.total(totalFormat) %> plus tax
             </h5>
-            </td> <td>
+            </td></tr><tr> <td>
             <button class="btn btn-info" type="submit" id="submitBtn" data-minicart-alt="<%= config.strings.buttonAlt %>"><%- config.strings.button %></button>
             </div>
-            </td></table>
+            </td></tr></table>
         <% } else { %>
             <p class="minicart-empty-text"><%= config.strings.empty %></p>
         <% } %>
