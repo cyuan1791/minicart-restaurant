@@ -33,7 +33,7 @@
     "node": ">=0.10.3"
   },
   "dependencies": {
-    "ejs": "^0.8.4"
+    "ejs": "^2.5.5"
   },
   "devDependencies": {
     "browserify": "^2.35.0",
